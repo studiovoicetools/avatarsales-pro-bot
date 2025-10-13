@@ -1,36 +1,42 @@
 import os
 from flask import Flask, request, jsonify
-import openai
+from openai import OpenAI
 from elevenlabs.client import ElevenLabs
 import requests
 import json
-from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
 
 # API Keys aus Umgebungsvariablen laden
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+elevenlabs_client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
 MASCOTBOT_API_KEY = os.getenv('MASCOTBOT_API_KEY')
+
+# CORS ohne flask_cors lösen
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 @app.route('/')
 def index():
     return "AvatarSalesPro API ist live! 🚀"
 
 @app.route('/chat', methods=['POST', 'OPTIONS'])
-@cross_origin()
 def chat():
+    if request.method == 'OPTIONS':
+        return '', 200
+        
     try:
         data = request.get_json()
         user_message = data.get('message', '')
         
         print(f"Empfangene Nachricht: {user_message}")
         
-               # 1. OpenAI für Text-Antwort (NEUE API)
-        from openai import OpenAI
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        
-        response = client.chat.completions.create(
+        # 1. OpenAI für Text-Antwort (NEUE API)
+        response = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Du bist ein hilfreicher Verkaufsassistent für einen E-Commerce Shop. Antworte kurz und freundlich."},
@@ -40,11 +46,10 @@ def chat():
         )
         
         ai_text = response.choices[0].message.content
+        print(f"OpenAI Antwort: {ai_text}")
         
         # 2. ElevenLabs für Sprachausgabe (NEUE API)
-        client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
-        
-        audio = client.generate(
+        audio = elevenlabs_client.generate(
             text=ai_text,
             voice="Bella",
             model="eleven_multilingual_v2"

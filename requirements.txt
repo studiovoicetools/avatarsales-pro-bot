@@ -5,4 +5,3 @@ redis
 gunicorn
 python-dotenv
 requests
-flask-cors==4.0.0
