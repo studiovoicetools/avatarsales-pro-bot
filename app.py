@@ -9,7 +9,6 @@ app = Flask(__name__)
 
 # API Keys aus Umgebungsvariablen laden
 openai.api_key = os.getenv('OPENAI_API_KEY')
-set_api_key(os.getenv('ELEVENLABS_API_KEY'))
 MASCOTBOT_API_KEY = os.getenv('MASCOTBOT_API_KEY')
 
 @app.route('/')
