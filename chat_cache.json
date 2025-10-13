@@ -1,0 +1,16 @@
+{
+  "default_shop:du da.": {
+    "question": "Du da.",
+    "answer": "Hallo! Wie kann ich Ihnen helfen?",
+    "timestamp": "2025-10-08T20:23:26.615661",
+    "usage_count": 1,
+    "shop_id": "default_shop"
+  },
+  "default_shop:hallo, was kannst du mir empfehlen?": {
+    "question": "Hallo, was kannst du mir empfehlen?",
+    "answer": "Hallo! Was suchen Sie denn genau?",
+    "timestamp": "2025-10-08T22:23:47.186079",
+    "usage_count": 2,
+    "shop_id": "default_shop"
+  }
+}
