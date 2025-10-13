@@ -4,8 +4,10 @@ import openai
 from elevenlabs.client import ElevenLabs
 import requests
 import json
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # API Keys aus Umgebungsvariablen laden
 openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -15,7 +17,8 @@ MASCOTBOT_API_KEY = os.getenv('MASCOTBOT_API_KEY')
 def index():
     return "AvatarSalesPro API ist live! 🚀"
 
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['POST', 'OPTIONS'])
+@cross_origin()
 def chat():
     try:
         data = request.get_json()
