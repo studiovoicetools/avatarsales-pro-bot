@@ -48,17 +48,26 @@ def chat():
         ai_text = response.choices[0].message.content
         print(f"OpenAI Antwort: {ai_text}")
         
-        # 2. ElevenLabs für Sprachausgabe (NEUE API)
-        audio = elevenlabs_client.generate(
-            text=ai_text,
-            voice="Bella",
-            model="eleven_multilingual_v2"
-        )
-        
-        # Audio temporär speichern (in Production würden wir es in CDN hochladen)
-        audio_filename = f"temp_audio_{hash(user_message)}.mp3"
-        with open(audio_filename, 'wb') as f:
-            f.write(audio)
+                # 2. ElevenLabs für Sprachausgabe (KORRIGIERTE API)
+        try:
+            audio_response = elevenlabs_client.text_to_speech.convert(
+                voice_id="pNInz6obpgDQGcFmaJgB",  # Bella Voice ID
+                optimize_streaming_latency=0,
+                output_format="mp3_22050_32",
+                text=ai_text,
+                model_id="eleven_multilingual_v2"
+            )
+            
+            # Audio speichern
+            audio_filename = f"temp_audio_{hash(user_message)}.mp3"
+            with open(audio_filename, 'wb') as f:
+                for chunk in audio_response:
+                    f.write(chunk)
+            
+            audio_generated = True
+        except Exception as e:
+            print(f"ElevenLabs Fehler: {str(e)}")
+            audio_generated = False
         
         # 3. MascotBot Integration vorbereiten
         # (Hier würden wir den Avatar mit der Audio-Datei triggern)
