@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AvatarSalesPro</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .chat-container { max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #chatBox { height: 400px; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; overflow-y: auto; border-radius: 5px; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .user-message { background: #4F46E5; color: white; margin-left: 20%; }
+        .bot-message { background: #f3f4f6; margin-right: 20%; }
+        .input-container { display: flex; gap: 10px; }
+        #messageInput { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        #sendButton { background: #4F46E5; color: white; }
+        #micButton, #audioButton { background: #6b7280; color: white; }
+        .loading-dots { display: inline-block; }
+        .loading-dots span { animation: bounce 1.5s infinite; display: inline-block; margin: 0 2px; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>AvatarSalesPro - KI Verkaufsassistent</h1>
+        
+        <!-- CHAT BOX -->
+        <div id="chatBox">
+            <div class="message bot-message">
+                Hallo! Ich bin Ihr KI-Verkaufsassistent. Wie kann ich Ihnen helfen?
+            </div>
+        </div>
+        
+        <!-- INPUT BEREICH -->
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Stellen Sie eine Frage...">
+            <button id="sendButton">Senden</button>
+            <button id="micButton">🎤</button>
+            <button id="audioButton">🔊</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+	
+	
+</body>
+</html>
