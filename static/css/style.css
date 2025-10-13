@@ -1,0 +1,201 @@
+/* Chat Container */
+.chat-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.video-player {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1001;
+    background-color: #000;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.video-cache-indicator {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #333;
+}
+
+.chat-container {
+    width: 20rem;
+    max-height: 80vh;
+    overflow: hidden;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+#chat-box {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.avatar-container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.input-container {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+
+@media (max-width: 768px) {
+    .chat-wrapper {
+        width: 90%;
+        right: 5%;
+    }
+}
+
+/* Messages Container */
+#messages {
+    padding: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Message Styling */
+.message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.message.system {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.message.user {
+    background-color: #dcf8c6;
+    color: #333;
+}
+
+/* Input Area */
+#message-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    outline: none;
+}
+
+#send-button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+/* Loading Indicator */
+.message.loading {
+    text-align: center;
+    color: #6B7280;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #chat-box {
+        width: 90%;
+        right: 5%;
+    }
+}
+
+/* Speech Controls */
+#mic-button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+#mic-button.active {
+    background-color: #ff0000;
+}
+
+#audio-player {
+    display: none;
+}
+
+#audio-player.active {
+    display: block;
+    margin-top: 1rem;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.loading::after {
+    content: '...';
+    animation: pulse 1s infinite;
+}
+
+/* Accessibility */
+#mic-button[aria-label]:after {
+    content: attr(aria-label);
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    color: #333;
+}
+/* Sprach-Button Styles */
+#mic-button, #audio-button {
+    padding: 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+#mic-button:hover, #audio-button:hover {
+    opacity: 0.8;
+}
+
+#mic-button.recording {
+    background: #dc3545;
+    animation: pulse 1s infinite;
+}
+
+#audio-button.active {
+    background: #007bff;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
