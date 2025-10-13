@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 import openai
-from elevenlabs import generate, set_api_key
+from elevenlabs.client import ElevenLabs
 import requests
 import json
 
@@ -37,8 +37,10 @@ def chat():
         ai_text = response.choices[0].message['content']
         print(f"OpenAI Antwort: {ai_text}")
         
-        # 2. ElevenLabs für Sprachausgabe
-        audio = generate(
+        # 2. ElevenLabs für Sprachausgabe (NEUE API)
+        client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
+        
+        audio = client.generate(
             text=ai_text,
             voice="Bella",
             model="eleven_multilingual_v2"
