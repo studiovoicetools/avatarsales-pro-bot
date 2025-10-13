@@ -23,8 +23,11 @@ def chat():
         
         print(f"Empfangene Nachricht: {user_message}")
         
-        # 1. OpenAI für Text-Antwort
-        response = openai.ChatCompletion.create(
+               # 1. OpenAI für Text-Antwort (NEUE API)
+        from openai import OpenAI
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Du bist ein hilfreicher Verkaufsassistent für einen E-Commerce Shop. Antworte kurz und freundlich."},
@@ -33,8 +36,7 @@ def chat():
             max_tokens=150
         )
         
-        ai_text = response.choices[0].message['content']
-        print(f"OpenAI Antwort: {ai_text}")
+        ai_text = response.choices[0].message.content
         
         # 2. ElevenLabs für Sprachausgabe (NEUE API)
         client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
