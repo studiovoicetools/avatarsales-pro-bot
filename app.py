@@ -4,6 +4,7 @@ from openai import OpenAI
 from elevenlabs.client import ElevenLabs
 import requests
 import json
+import base64  # Diese Zeile hinzufügen, falls nicht vorhanden
 
 app = Flask(__name__)
 
@@ -84,3 +85,120 @@ def chat():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=False)
+    
+    # =============================================================================
+# MASCOTBOT INTEGRATION - NEUE ENDPOINTS (ERGÄNZUNG)
+# =============================================================================
+
+@app.route('/api/mascot/avatars', methods=['GET', 'OPTIONS'])
+def get_mascot_avatars():
+    """Holt verfügbare Avatare von MascotBot API"""
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        response = requests.get(
+            'https://api.mascot.bot/v1/avatars',
+            headers={'Authorization': f'Bearer {MASCOTBOT_API_KEY}'}
+        )
+        
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify({'error': 'MascotBot API Fehler', 'status': response.status_code}), 500
+            
+    except Exception as e:
+        print(f"MascotBot Avatare Fehler: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mascot/speak', methods=['POST', 'OPTIONS'])
+def mascot_speak():
+    """Text zu Speech mit Lip-Sync für Avatar"""
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        data = request.get_json()
+        text = data.get('text', '')
+        
+        print(f"MascotBot Speak: {text}")
+        
+        # 1. ElevenLabs Audio generieren (Ihre bestehende Logik)
+        try:
+            audio_response = elevenlabs_client.text_to_speech.convert(
+                voice_id="pNInz6obpgDQGcFmaJgB",  # Bella Voice ID
+                optimize_streaming_latency=0,
+                output_format="mp3_22050_32",
+                text=text,
+                model_id="eleven_multilingual_v2"
+            )
+            
+            # Audio in Memory speichern (nicht auf Disk)
+            audio_chunks = []
+            for chunk in audio_response:
+                audio_chunks.append(chunk)
+            audio_data = b''.join(audio_chunks)
+            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+            
+        except Exception as e:
+            print(f"ElevenLabs Fehler in MascotBot: {str(e)}")
+            return jsonify({'error': f'ElevenLabs Fehler: {str(e)}'}), 500
+        
+        # 2. Audio zu MascotBot für Visemes/Lip-Sync senden
+        try:
+            visemes_payload = {
+                "audio": audio_base64,
+                "sample_rate": 22050  # Entspricht der ElevenLabs Output-Rate
+            }
+            
+            visemes_response = requests.post(
+                'https://api.mascot.bot/v1/visemes',
+                json=visemes_payload,
+                headers={
+                    'Authorization': f'Bearer {MASCOTBOT_API_KEY}',
+                    'Content-Type': 'application/json'
+                }
+            )
+            
+            if visemes_response.status_code == 200:
+                visemes_data = visemes_response.json()
+                
+                return jsonify({
+                    'success': True,
+                    'audio': audio_base64,
+                    'visemes': visemes_data,
+                    'message': 'Audio und Lip-Sync erfolgreich generiert'
+                })
+            else:
+                return jsonify({
+                    'error': 'MascotBot Visemes Fehler',
+                    'status': visemes_response.status_code,
+                    'details': visemes_response.text
+                }), 500
+                
+        except Exception as e:
+            print(f"MascotBot Visemes Fehler: {str(e)}")
+            return jsonify({'error': f'MascotBot Fehler: {str(e)}'}), 500
+            
+    except Exception as e:
+        print(f"Allgemeiner Speak Fehler: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mascot/health', methods=['GET'])
+def mascot_health():
+    """Health Check für MascotBot Integration"""
+    try:
+        response = requests.get(
+            'https://api.mascot.bot/v1/avatars',
+            headers={'Authorization': f'Bearer {MASCOTBOT_API_KEY}'}
+        )
+        return jsonify({
+            'mascotbot_status': 'connected' if response.status_code == 200 else 'error',
+            'status_code': response.status_code
+        })
+    except Exception as e:
+        return jsonify({'mascotbot_status': 'error', 'error': str(e)})
+
+# =============================================================================
+# ENDE MASCOTBOT ERGÄNZUNG
+# =============================================================================
