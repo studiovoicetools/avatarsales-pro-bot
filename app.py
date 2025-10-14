@@ -84,33 +84,27 @@ def chat():
         return jsonify({'error': str(e)}), 500
         
           # =============================================================================
-# MASCOTBOT INTEGRATION - NEUE ENDPOINTS (ERGÄNZUNG)
+# MASCOTBOT INTEGRATION MIT ENVIRONMENT VARIABLE
 # =============================================================================
 
-@app.route('/api/mascot/avatars', methods=['GET', 'OPTIONS'])
-def get_mascot_avatars():
-    """Holt verfügbare Avatare von MascotBot API"""
+@app.route('/api/mascot/account', methods=['GET', 'OPTIONS'])
+def get_mascot_account():
+    """Holt Account-Info von MascotBot"""
     if request.method == 'OPTIONS':
         return '', 200
         
     try:
         response = requests.get(
-            'https://api.mascot.bot/v1/avatars',
+            'https://api.mascot.bot/v1/account',
             headers={'Authorization': f'Bearer {MASCOTBOT_API_KEY}'}
         )
-        
-        if response.status_code == 200:
-            return jsonify(response.json()), 200
-        else:
-            return jsonify({'error': 'MascotBot API Fehler', 'status': response.status_code}), 500
-            
+        return jsonify(response.json()), response.status_code
     except Exception as e:
-        print(f"MascotBot Avatare Fehler: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/mascot/speak', methods=['POST', 'OPTIONS'])
-def mascot_speak():
-    """Text zu Speech mit Lip-Sync für Avatar"""
+@app.route('/api/mascot/visemes-audio', methods=['POST', 'OPTIONS'])
+def generate_visemes_audio():
+    """Generiert Audio + Lip-Sync Visemes"""
     if request.method == 'OPTIONS':
         return '', 200
         
@@ -118,87 +112,78 @@ def mascot_speak():
         data = request.get_json()
         text = data.get('text', '')
         
-        print(f"MascotBot Speak: {text}")
+        print(f"Generiere Visemes-Audio für: {text}")
         
-        # 1. ElevenLabs Audio generieren (Ihre bestehende Logik)
-        try:
-            audio_response = elevenlabs_client.text_to_speech.convert(
-                voice_id="pNInz6obpgDQGcFmaJgB",  # Bella Voice ID
-                optimize_streaming_latency=0,
-                output_format="mp3_22050_32",
-                text=text,
-                model_id="eleven_multilingual_v2"
-            )
-            
-            # Audio in Memory speichern (nicht auf Disk)
-            audio_chunks = []
-            for chunk in audio_response:
-                audio_chunks.append(chunk)
-            audio_data = b''.join(audio_chunks)
-            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
-            
-        except Exception as e:
-            print(f"ElevenLabs Fehler in MascotBot: {str(e)}")
-            return jsonify({'error': f'ElevenLabs Fehler: {str(e)}'}), 500
+        # Direkt an MascotBot API senden
+        payload = {
+            "text": text,
+            "voice": "Bella",
+            "provider": "elevenlabs"
+        }
         
-        # 2. Audio zu MascotBot für Visemes/Lip-Sync senden
-        try:
-            visemes_payload = {
-                "audio": audio_base64,
-                "sample_rate": 22050  # Entspricht der ElevenLabs Output-Rate
+        response = requests.post(
+            'https://api.mascot.bot/v1/visemes-audio',
+            json=payload,
+            headers={
+                'Authorization': f'Bearer {MASCOTBOT_API_KEY}',
+                'Content-Type': 'application/json'
             }
-            
-            visemes_response = requests.post(
-                'https://api.mascot.bot/v1/visemes',
-                json=visemes_payload,
-                headers={
-                    'Authorization': f'Bearer {MASCOTBOT_API_KEY}',
-                    'Content-Type': 'application/json'
-                }
-            )
-            
-            if visemes_response.status_code == 200:
-                visemes_data = visemes_response.json()
-                
-                return jsonify({
-                    'success': True,
-                    'audio': audio_base64,
-                    'visemes': visemes_data,
-                    'message': 'Audio und Lip-Sync erfolgreich generiert'
-                })
-            else:
-                return jsonify({
-                    'error': 'MascotBot Visemes Fehler',
-                    'status': visemes_response.status_code,
-                    'details': visemes_response.text
-                }), 500
-                
-        except Exception as e:
-            print(f"MascotBot Visemes Fehler: {str(e)}")
-            return jsonify({'error': f'MascotBot Fehler: {str(e)}'}), 500
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return jsonify({
+                'success': True,
+                'audio': result.get('audio'),
+                'visemes': result.get('visemes'),
+                'message': 'Audio und Visemes erfolgreich generiert'
+            })
+        else:
+            return jsonify({
+                'error': 'MascotBot API Fehler',
+                'status': response.status_code,
+                'details': response.text
+            }), 500
             
     except Exception as e:
-        print(f"Allgemeiner Speak Fehler: {str(e)}")
+        print(f"Visemes Audio Fehler: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/mascot/health', methods=['GET'])
-def mascot_health():
-    """Health Check für MascotBot Integration"""
+@app.route('/api/mascot/simple-speak', methods=['POST', 'OPTIONS'])
+def simple_speak():
+    """Vereinfachte Speak-Funktion (Fallback)"""
+    if request.method == 'OPTIONS':
+        return '', 200
+        
     try:
-        response = requests.get(
-            'https://api.mascot.bot/v1/avatars',
-            headers={'Authorization': f'Bearer {MASCOTBOT_API_KEY}'}
+        data = request.get_json()
+        text = data.get('text', '')
+        
+        # Verwenden Sie Ihre bestehende ElevenLabs Logik
+        audio_response = elevenlabs_client.text_to_speech.convert(
+            voice_id="pNInz6obpgDQGcFmaJgB",
+            optimize_streaming_latency=0,
+            output_format="mp3_22050_32",
+            text=text,
+            model_id="eleven_multilingual_v2"
         )
+        
+        # Audio in Memory speichern
+        audio_chunks = []
+        for chunk in audio_response:
+            audio_chunks.append(chunk)
+        audio_data = b''.join(audio_chunks)
+        audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+        
         return jsonify({
-            'mascotbot_status': 'connected' if response.status_code == 200 else 'error',
-            'status_code': response.status_code
+            'success': True,
+            'audio': audio_base64,
+            'message': 'Audio erfolgreich generiert (ohne Lip-Sync)',
+            'text': text
         })
+        
     except Exception as e:
-        return jsonify({'mascotbot_status': 'error', 'error': str(e)})
-
-# =============================================================================
-# ENDE MASCOTBOT ERGÄNZUNG
-# =============================================================================
+        return jsonify({'error': str(e)}), 500
         
 
 if __name__ == '__main__':
