@@ -4,7 +4,7 @@ from openai import OpenAI
 from elevenlabs.client import ElevenLabs
 import requests
 import json
-import base64  # Diese Zeile hinzufügen, falls nicht vorhanden
+import base64
 
 app = Flask(__name__)
 
@@ -49,7 +49,7 @@ def chat():
         ai_text = response.choices[0].message.content
         print(f"OpenAI Antwort: {ai_text}")
         
-                # 2. ElevenLabs für Sprachausgabe (KORRIGIERTE API)
+        # 2. ElevenLabs für Sprachausgabe (KORRIGIERTE API)
         try:
             audio_response = elevenlabs_client.text_to_speech.convert(
                 voice_id="pNInz6obpgDQGcFmaJgB",  # Bella Voice ID
@@ -82,9 +82,9 @@ def chat():
     except Exception as e:
         print(f"Fehler: {str(e)}")
         return jsonify({'error': str(e)}), 500
-        
-          # =============================================================================
-# MASCOTBOT INTEGRATION MIT ENVIRONMENT VARIABLE
+
+# =============================================================================
+# MASCOTBOT INTEGRATION - NEUE ENDPOINTS
 # =============================================================================
 
 @app.route('/api/mascot/account', methods=['GET', 'OPTIONS'])
@@ -184,9 +184,21 @@ def simple_speak():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-        
+
+@app.route('/api/mascot/health', methods=['GET'])
+def mascot_health():
+    """Health Check für MascotBot Integration"""
+    try:
+        response = requests.get(
+            'https://api.mascot.bot/v1/account',
+            headers={'Authorization': f'Bearer {MASCOTBOT_API_KEY}'}
+        )
+        return jsonify({
+            'mascotbot_status': 'connected' if response.status_code == 200 else 'error',
+            'status_code': response.status_code
+        })
+    except Exception as e:
+        return jsonify({'mascotbot_status': 'error', 'error': str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=False)
-    
-  
