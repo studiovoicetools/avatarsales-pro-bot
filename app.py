@@ -104,7 +104,7 @@ def get_mascot_account():
 
 @app.route('/api/mascot/visemes-audio', methods=['POST', 'OPTIONS'])
 def generate_visemes_audio():
-    """Generiert Audio + Lip-Sync Visemes"""
+    """Generiert Audio + Lip-Sync Visemes für Avatar"""
     if request.method == 'OPTIONS':
         return '', 200
         
@@ -112,42 +112,14 @@ def generate_visemes_audio():
         data = request.get_json()
         text = data.get('text', '')
         
-        print(f"Generiere Visemes-Audio für: {text}")
+        print(f"Generiere Lip-Sync Audio für: {text}")
         
-        # Direkt an MascotBot API senden
+        # MascotBot Visemes-Audio API aufrufen
         payload = {
             "text": text,
-            "voice": "Bella",
-            "provider": "elevenlabs"
-        }
-        
-        response = requests.post(
-            'https://api.mascot.bot/v1/visemes-audio',
-            json=payload,
-            headers={
-                'Authorization': f'Bearer {MASCOTBOT_API_KEY}',
-                'Content-Type': 'application/json'
-            }
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            return jsonify({
-                'success': True,
-                'audio': result.get('audio'),
-                'visemes': result.get('visemes'),
-                'message': 'Audio und Visemes erfolgreich generiert'
-            })
-        else:
-            return jsonify({
-                'error': 'MascotBot API Fehler',
-                'status': response.status_code,
-                'details': response.text
-            }), 500
-            
-    except Exception as e:
-        print(f"Visemes Audio Fehler: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+            "voice": "Bella",  # Stimme auswählen
+            "provider": "elevenlabs",
+            "model_id": "eleven_m
 
 @app.route('/api/mascot/simple-speak', methods=['POST', 'OPTIONS'])
 def simple_speak():
