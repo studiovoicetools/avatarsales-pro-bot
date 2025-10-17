@@ -192,7 +192,7 @@ def speak_with_lipsync():
         audio_response = elevenlabs_client.text_to_speech.convert(
             voice_id="pNInz6obpgDQGcFmaJgB",  # Bella Voice
             optimize_streaming_latency=0,
-            output_format="mp3_22050_32", 
+            output_format="mp3_22050_32",
             text=text,
             model_id="eleven_multilingual_v2"
         )
@@ -205,6 +205,9 @@ def speak_with_lipsync():
         audio_base64 = base64.b64encode(audio_data).decode('utf-8')
         
         # 2. MascotBot API für Lip-Sync/Visemes aufrufen
+        lip_sync_available = False
+        visemes_data = None
+        
         if MASCOTBOT_API_KEY and MASCOTBOT_API_KEY != 'your_mascotbot_api_key':
             try:
                 visemes_response = requests.post(
@@ -218,21 +221,17 @@ def speak_with_lipsync():
                 
                 if visemes_response.status_code == 200:
                     visemes_data = visemes_response.json()
-                    return jsonify({
-                        'success': True,
-                        'audio': audio_base64,
-                        'visemes': visemes_data,
-                        'lip_sync': True
-                    })
+                    lip_sync_available = True
+                    print("✅ Lip-Sync Visemes erhalten")
             except Exception as e:
                 print(f"MascotBot Lip-Sync Fehler: {e}")
         
-        # Fallback: Nur Audio ohne Lip-Sync
         return jsonify({
-            'success': True, 
+            'success': True,
             'audio': audio_base64,
-            'lip_sync': False,
-            'message': 'Audio generiert (Lip-Sync nicht verfügbar)'
+            'lip_sync': lip_sync_available,
+            'visemes': visemes_data,
+            'message': 'Audio generiert' + (' mit Lip-Sync' if lip_sync_available else ' (ohne Lip-Sync)')
         })
         
     except Exception as e:
